@@ -1,0 +1,202 @@
+<!doctype html>
+ <html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Shopping Bag</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<!--Google font used open sans-->
+        <link href='http://fonts.googleapis.com/css?family=Open+Sans:600,400,300' rel='stylesheet' type='text/css'>    
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/bootstrap-select.min.css">
+        <link rel="stylesheet" href="css/main.css">
+    </head>
+    <body>
+	
+	<div class="shopping-wrapper">
+		<div class="container"> 
+			<header><!--header starts here -->
+				<h2>Your Shopping Bag</h2>
+			</header><!--header starts here -->
+			
+			<!--product list populated here-->
+			<section id="productList"></section>
+			<!--product list closed -->
+	
+		<!--checkout section -->	
+		<section class="checkout-section">
+            <div class="row">
+                <div class="column col-lg-4 col-md-4 col-sm-4 hidden-xs checkout-section-left">
+                    <p><strong>Need help <br/> or have questions?</strong></p>
+                    <p>Call Customer Service at<br/> 1-800-555-5555</p>
+                    <p><a href="javascript:;">Chat with one of<br/> our stylists</a></p>
+                    <p><a href="javascript:;">See return <br/> &amp; exchange policy</a></p>
+                </div>
+                <div class="column col-lg-8 col-md-8 col-sm-8 col-sm-12 checkout-section-right">
+                    <form class="form-inline" role="form" onSubmit="alert('Promotion code is valid and successfully subitted');return false;">
+                      <div class="row">
+                        <div class="column col-lg-6 col-md-4 col-sm-4 col-xs-12"><label for="promo-code">Enter promotion code <br/> or gift card</label></div>
+                        <div class="column col-lg-6 col-md-8 col-sm-8 col-xs-12 text-right">
+                            <input type="text" class="form-control" id="promo-code" required pattern="^#?([A-Z]{2}[0-9]{2})$" title="Promotion code / Gift code is not valid e.g JF10">
+                            <input type="submit" class="btn btn-default" value="Apply"/>  
+                        </div>
+                      </div>
+                    </form>
+                    <div id="checkoutDiscounts"></div>
+                    <div class="text-right bottomCheckoutGroup">
+                        <div><a href="">Continue Shopping</a> <button class="btn btn-primary">Checkout</button></div>
+                        <div><p><img src="data/lock.jpg" /><span>Secure checkout. Shopping is always safe &amp; secure</span></p></div>
+						<p class="hidden-lg hidden-md hidden-sm">SIGN IN to save your cart and have access to your items on mobile, tablet and desktop.</p>
+                    </div>
+                </div>
+            </div>       
+       </section>
+	   <!--checkout section Closed-->	
+	   
+		   <!--modal-->
+		   <div class="modal fade" id="tempModal">
+				<div class="modal-dialog">
+					<div class="modal-content">
+					<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					</div>
+						<div class="modal-body"></div>
+					 </div>
+			   </div>      
+		   </div><!--modal closed-->
+		</div> <!-- /container -->
+	</div><!--shopping wrapper closed-->
+		
+<!-- Template of Checkout/discount Section -->
+<script type="text/template" id="discountTemplate">
+   <ul class="list-group">
+	  <li class="list-group-item">
+		<span class="badge"><sup>$</sup><%-productdata.totalPrice %></span>
+		<strong>SubTotal</strong>
+	  </li>
+	  <% if(productdata.discount > 0 ){%>
+	  <li class="list-group-item">
+		<span class="badge"><small>-</small><sup>$</sup><%- productdata.discount %></span>
+		<strong>Promotion code <span class="black-highlight">JF<%- productdata.discountCode %></span> Applied</strong>
+	  </li>
+	  <%}%>
+	  <li class="list-group-item">
+		
+		 <% if(productdata.finalAmmount < 50 ){%>
+		 	<span class="badge">Paid</span>
+		<%}else{%>
+			<span class="badge">Free</span>
+		<%}%>
+		<strong>Estimated Shipping<sup>*</sup></strong><br/><small>You qualify for free shipping <br/> because your order is over 50*</small>
+	  </li>
+		<li class="list-group-item">
+		<span class="badge"><sup>$</sup><%-productdata.finalAmmount %></span>
+		<span class="estimated">Estimated Total</span><br/><small>Tax will be applied during checkout</small>
+	  </li>
+	</ul>
+</script>
+
+<!-- populate products listing-->
+<script type="text/template" id="productTemplate">
+ 	<div class="row hidden-xs darkBottom">
+		<div class="column col-lg-3 col-md-3 col-sm-3 col-xs-6"><span class="num_class"><% var t = _.reduce(_.pluck(productdata.items, "p_quantity"),function (m,i) {return Number(m) + Number(i); }, 0);%><%- t %> items</span></div>
+		<div class="column col-lg-9 col-md-9 col-sm-9 col-xs-9">
+			<div class="row">
+				<div class="column col-lg-8 col-md-8 col-sm-8 col-xs-12"></div>
+				<div class="column col-lg-1 col-md-1 col-sm-1 col-xs-12 text-center">Size</div>
+				<div class="column col-lg-1 col-md-1 col-sm-1 col-xs-12 text-center">Qty</div>
+				<div class="column col-lg-2 col-md-2 col-sm-2 col-xs-12 text-center">Price</div>
+			</div>
+		</div>    
+   </div>
+   <% _.each(productdata.items, function(item, index){ %>
+  
+	<div class="row single-product">
+		<div class="column col-lg-3 col-md-3 col-sm-3 col-xs-5">
+			<figure><img src="data/T<%- item.p_id %>.jpg" class="img-responsive" /></figure>                    
+		</div>
+		<div class="column col-lg-9 col-md-9 col-sm-9 col-xs-7 item-group-xs">
+			<div class="row">
+				<div class="column col-lg-8 col-md-8 col-sm-8 col-xs-12 product-description">
+					<h2><%- item.p_variation %> <%- item.p_name %></h2>
+					<p>Style #: <span class="item-style"><%- item.p_style %></span></p>
+					<p>Colour: <span class="item-color"><%- item.p_selected_color.name %></span></p>
+					<p class="hidden-lg hidden-md hidden-sm">Size: <span class="item-color"><%- item.p_selected_size.code %></span></p>
+					<div class="action-btn-group hidden-xs">
+						<div class="btn-group">
+							<a class="edit btn" data-pid="<%- index%>">Edit</a>
+							<a class="remove btn" data-pid="<%- index%>">X Remove</a>
+							<a class="save btn">Save for later</a>
+						</div>
+
+					</div>
+				</div>
+				<div class="column col-lg-1 col-md-1 col-sm-1 col-xs-12 text-center hidden-xs item-size"><span class=""><%- item.p_selected_size.code%></span></div>
+				<div class="column col-lg-1 col-md-1 col-sm-1 col-xs-12 text-center item-qty-container"><span class="hidden-lg hidden-md hidden-sm">QTY: </span><span class="item-qty"><%- item.p_quantity%></span><!--<input type="text" value="" class="form-control itemQuantity"/>--></div>
+				<div class="column col-lg-2 col-md-2 col-sm-2 col-xs-12 text-center price-container">
+					<% if(item.p_originalprice == item.p_price/item.p_quantity) { %>
+						<div class="price-tag"><sup><%- item.c_currency %></sup><%- item.p_price %></div>
+					<%}else{%>
+						<div class="price-tag"><del><sup><%- item.c_currency %></sup><%- item.p_originalprice %></del>
+						<sup><%- item.c_currency %></sup><%- item.p_price %></div>
+					<%}%>
+				</div>
+			</div>
+		</div>
+		<div class="col-xs-12 hidden-lg hidden-md hidden-sm">
+			<div class="action-btn-group">
+				<div class="btn-group">
+					<a class="edit btn" data-pid="<%- index%>">Edit</a>
+					<a class="remove btn" data-pid="<%- index%>">X Remove</a>
+					<a class="save btn">Save for later</a>
+				</div>
+			</div>
+		</div>
+   </div>
+   <% });%>
+</script>
+
+
+<!-- Template of Edit Product -->
+<script type="text/template" id="editProductTemplate">
+	<div class="row itemModal">
+		<div class="column col-lg-5 col-md-5 col-sm-5 col-xs-12 product-overlay-left">
+			<h2><%- productdata.item.p_name %></h2>
+			<h3><sup><%- productdata.item.c_currency %></sup><%- productdata.item.p_originalprice %></h3>
+			<div class="color-selection text-center">
+				<p>Available Colors</p>
+				<% _.each(productdata.item.p_available_options.colors,function(color){%>
+					<div class="product-color-selected <% if(color.hexcode == productdata.item.p_selected_color.hexcode){%>active<%}%>" style="background-color:<%- color.hexcode %>" data-bg-code="<%- color.name %>" onClick="app.miscellaneousFunc.activate(this)"></div>
+				<%});%>
+			</div>
+			<div class="size-selection">
+				<input type="hidden" id="modalItemPid" value="<%- productdata.item.p_id %>" />
+				<select id="size-options" data-width="48%" class="pull-left">
+					<option value="">Size</option>
+				<% _.each(productdata.item.p_available_options.sizes,function(size){%>
+					 <option value="<%- size.code %>" <%if(size.code == productdata.item.p_selected_size.code){%>selected<%}%>><%- size.name%></option>
+				<%});%>
+				</select>
+				<select id="select-qty" data-width="48%" class="pull-right">
+					<% for(var i = 1; i<=10; i++){%>
+						<option value="<%- i%>" <%if(i == productdata.item.p_quantity){%>selected<%}%>>Qty:<%- i%></option>
+					<%}%>
+				</select>
+				<p class="hide text-danger padding10 errorText">Please choose correct entries</p>
+				<button class="btn btn-primary" id="update-product">EDIT</button>
+				<a href="javascript:;" class="product-details">See product details</a>
+			</div> 
+		</div>
+		<div class="column col-lg-7 col-md-7 col-sm-7 col-xs-12 product-overlay-right">
+			<div class="product-image" style="background-color:<%- productdata.item.p_selected_color.hexcode %>"><figure><img src="data/T<%- productdata.item.p_id %>.jpg" class="img-responsive" /></figure></div>
+		</div>
+	</div>        
+</script>
+		
+<script src="js/vendor/jquery-1.11.2.min.js"></script>
+<script src="js/vendor/bootstrap.min.js"></script>
+<script src="js/vendor/underscore-min.js"></script>
+<script src="js/vendor/bootstrap-select.min.js"></script>
+<script src="js/main.js"></script>    
+</body>
+</html>
